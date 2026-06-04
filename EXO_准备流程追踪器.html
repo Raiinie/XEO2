@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXO · 准备流程追踪器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2234;
+  --blue:#3b82f6;--blue2:#1d4ed8;--lblue:#1e3a5f;
+  --green:#10b981;--lgreen:#064e3b;
+  --amber:#f59e0b;--lamber:#451a03;
+  --red:#ef4444;--lred:#450a0a;
+  --violet:#8b5cf6;--lviolet:#2e1065;
+  --cyan:#06b6d4;--lcyan:#164e63;
+  --white:#f1f5f9;--muted:#64748b;--border:rgba(255,255,255,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--white);font-size:14px;line-height:1.75;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--blue2);}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:52px;}
+.logo{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--blue);letter-spacing:3px;}
+.nav-links{display:flex;gap:20px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:11px;font-weight:500;letter-spacing:.5px;transition:color .2s;}
+.nav-links a:hover{color:var(--white);}
+.progress-badge{font-family:'Space Mono',monospace;font-size:11px;
+  background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);
+  color:var(--blue);padding:3px 12px;border-radius:20px;}
+
+/* HERO */
+.hero{padding:60px 40px 48px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 80% at 70% 50%,rgba(59,130,246,.08) 0%,transparent 60%);}
+.hero-inner{max-width:1000px;margin:0 auto;position:relative;}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;
+  background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);
+  padding:4px 12px;border-radius:2px;margin-bottom:20px;}
+.hero-tag span{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--blue);font-family:'Space Mono',monospace;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hero h1{font-family:'Noto Serif SC',serif;font-size:40px;font-weight:900;line-height:1.2;margin-bottom:12px;}
+.hero h1 em{color:var(--blue);font-style:normal;}
+.hero-sub{color:#94a3b8;font-size:14px;max-width:500px;margin-bottom:32px;}
+.hero-stats{display:flex;gap:0;flex-wrap:wrap;}
+.hstat{padding:16px 28px;border-right:1px solid var(--border);}
+.hstat:first-child{padding-left:0;}.hstat:last-child{border:none;}
+.hstat-n{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;line-height:1;}
+.hstat-n em{color:var(--blue);font-size:12px;font-style:normal;}
+.hstat-l{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* PROGRESS BAR */
+.progress-wrap{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;}
+.progress-inner{max-width:1000px;margin:0 auto;}
+.progress-label{font-size:11px;color:var(--muted);margin-bottom:8px;
+  display:flex;justify-content:space-between;}
+.progress-label span{color:var(--blue);font-family:'Space Mono',monospace;}
+.progress-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));
+  border-radius:2px;width:0%;transition:width .5s ease;}
+.phase-dots{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.pdot{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.pdot-circle{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* MAIN */
+.main{max-width:1000px;margin:0 auto;padding:0 40px 80px;}
+
+/* PHASE */
+.phase{margin-top:48px;}
+.phase-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.phase-num{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:3px;flex-shrink:0;}
+.phase-title{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;}
+.phase-days{font-size:11px;color:var(--muted);margin-left:auto;font-family:'Space Mono',monospace;}
+.phase-sub{font-size:13px;color:#94a3b8;margin-bottom:20px;padding-left:0;}
+
+/* TASK CARDS */
+.tasks{display:flex;flex-direction:column;gap:10px;}
+.task{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  transition:border-color .2s;}
+.task.done{border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.03);}
+.task-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+.task-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;cursor:pointer;background:transparent;}
+.task.done .task-check{background:var(--green);border-color:var(--green);}
+.task.done .task-check::after{content:'✓';color:white;font-size:11px;font-weight:700;}
+.task-title-wrap{flex:1;}
+.task-title{font-size:14px;font-weight:600;}
+.task.done .task-title{text-decoration:line-through;color:var(--muted);}
+.task-meta{display:flex;gap:8px;margin-top:2px;flex-wrap:wrap;}
+.task-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;
+  font-family:'Space Mono',monospace;letter-spacing:.5px;}
+.task-expand{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--muted);flex-shrink:0;transition:all .2s;}
+.task.open .task-expand{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:var(--blue);}
+.task-body{display:none;padding:0 18px 16px;border-top:1px solid var(--border);}
+.task.open .task-body{display:block;padding-top:14px;}
+.task-section{margin-bottom:12px;}
+.task-section-label{font-size:10px;letter-spacing:1.5px;font-weight:700;
+  color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px;}
+.task-desc{font-size:13px;color:#94a3b8;line-height:1.7;}
+.task-steps{list-style:none;display:flex;flex-direction:column;gap:4px;}
+.task-steps li{font-size:13px;color:#cbd5e1;display:flex;align-items:flex-start;gap:7px;}
+.task-steps li::before{content:'→';color:var(--blue);flex-shrink:0;margin-top:1px;}
+.task-output{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);
+  border-radius:6px;padding:10px 14px;font-size:12px;color:#93c5fd;}
+.task-output strong{color:var(--blue);}
+.task-source{background:rgba(255,255,255,.03);border-radius:6px;padding:8px 12px;
+  font-size:11px;color:var(--muted);}
+.task-source strong{color:#94a3b8;}
+
+/* DATA TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
+.data-table th{padding:8px 12px;text-align:left;background:rgba(59,130,246,.1);
+  color:var(--blue);font-size:10px;letter-spacing:1px;font-family:'Space Mono',monospace;
+  border-bottom:1px solid rgba(59,130,246,.2);}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:#cbd5e1;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(255,255,255,.02);}
+
+/* SURVEY */
+.survey-q{background:rgba(255,255,255,.03);border-radius:6px;padding:10px 14px;
+  margin-bottom:6px;font-size:13px;color:#cbd5e1;}
+.survey-q strong{color:var(--white);font-family:'Space Mono',monospace;font-size:11px;}
+.survey-opts{color:var(--muted);font-size:11px;margin-top:4px;}
+
+/* DELIVERABLES */
+.deliverables-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+.del-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 16px;}
+.del-icon{font-size:20px;margin-bottom:8px;}
+.del-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.del-desc{font-size:11px;color:var(--muted);line-height:1.6;}
+.del-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;
+  border-radius:20px;margin-top:8px;font-family:'Space Mono',monospace;}
+
+/* RESOURCES */
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+.res-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:14px;text-align:center;}
+.res-icon{font-size:18px;margin-bottom:6px;}
+.res-title{font-size:12px;font-weight:600;margin-bottom:3px;}
+.res-sub{font-size:10px;color:var(--muted);}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);
+  padding:32px 40px;text-align:center;}
+footer p{color:var(--muted);font-size:11px;}
+
+@media(max-width:768px){
+  nav{padding:0 16px;}.nav-links{display:none;}
+  .hero,.progress-wrap{padding:40px 16px 32px;}
+  .main{padding:0 16px 60px;}
+  .deliverables-grid{grid-template-columns:1fr;}
+  .res-grid{grid-template-columns:1fr 1fr;}
+  .hero h1{font-size:28px;}
+  .hstat{padding:12px 16px;}
+}
+
+/* COLORS */
+.c-blue{color:var(--blue)!important;}
+.c-green{color:var(--green)!important;}
+.c-amber{color:var(--amber)!important;}
+.c-red{color:var(--red)!important;}
+.c-violet{color:var(--violet)!important;}
+.c-cyan{color:var(--cyan)!important;}
+.bg-blue{background:rgba(59,130,246,.12);color:#93c5fd;}
+.bg-green{background:rgba(16,185,129,.12);color:#6ee7b7;}
+.bg-amber{background:rgba(245,158,11,.12);color:#fcd34d;}
+.bg-red{background:rgba(239,68,68,.12);color:#fca5a5;}
+.bg-violet{background:rgba(139,92,246,.12);color:#c4b5fd;}
+.bg-cyan{background:rgba(6,182,212,.12);color:#67e8f9;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">EXO</div>
+  <div class="nav-links">
+    <a href="#phase1">方向锁定</a>
+    <a href="#phase2">市场调研</a>
+    <a href="#phase3">产品内容</a>
+    <a href="#phase4">演讲素材</a>
+    <a href="#phase5">最终冲刺</a>
+    <a href="#deliverables">交付清单</a>
+  </div>
+  <div class="progress-badge" id="prog-badge">0 / 21 完成</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag"><div class="dot"></div><span>EXO · 准备流程追踪器 · 6月17日上台</span></div>
+    <h1>从零到<em>上台演讲</em><br>你们需要做的每一步</h1>
+    <p class="hero-sub">这不是演讲稿，是你们在台下需要准备的所有素材、数据、内容的完整清单。按顺序来，每完成一项就打勾。</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">13<em> 天</em></div><div class="hstat-l">剩余准备时间</div></div>
+      <div class="hstat"><div class="hstat-n">5<em> 阶段</em></div><div class="hstat-l">准备流程</div></div>
+      <div class="hstat"><div class="hstat-n">21<em> 项</em></div><div class="hstat-l">具体任务</div></div>
+      <div class="hstat"><div class="hstat-n">3-5<em> 人</em></div><div class="hstat-l">执行团队</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-label">
+      <span>总体进度</span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="phase-dots">
+      <div class="pdot"><div class="pdot-circle" style="background:var(--blue)"></div>Day 1-2 方向锁定</div>
+      <div class="pdot"><div class="pdot-circle" style="background:var(--violet)"></div>Day 3-5 市场调研</div>
+      <div class="pdot"><div class="pdot-circle" style="background:var(--cyan)"></div>Day 5-8 产品内容</div>
+      <div class="pdot"><div class="pdot-circle" style="background:var(--amber)"></div>Day 8-11 演讲素材</div>
+      <div class="pdot"><div class="pdot-circle" style="background:var(--green)"></div>Day 11-13 最终冲刺</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- PHASE 1 -->
+<div class="phase" id="phase1">
+  <div class="phase-header">
+    <div class="phase-num bg-blue">PHASE 1</div>
+    <div class="phase-title">方向锁定</div>
+    <div class="phase-days">Day 1–2 · 全员</div>
+  </div>
+  <p class="phase-sub">这两天不做任何执行，只做决策。所有后续工作都依赖这里的共识，一旦这里没对齐，后面做什么都会返工。</p>
+  <div class="tasks">
+
+    <div class="task" id="t1">
+      <div class="task-header" onclick="toggleTask('t1')">
+        <div class="task-check" onclick="checkTask(event,'t1')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">确认公司名称与一句话定位</div>
+          <div class="task-meta">
+            <span class="task-tag bg-blue">必须完成</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 1小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要确认的内容</div>
+          <ul class="task-steps">
+            <li>公司名称：EXO（确认或更改）</li>
+            <li>一句话定位：「EXO是专为求职受阻的应届毕业生设计的一人公司诊断平台」——确认或调整</li>
+            <li>核心开场白：确认使用我们整理的「2亿人」版本还是需要修改</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>一张共识纸，写清公司名 + 定位句 + 开场白确认版本，所有人签字确认</div>
+      </div>
+    </div>
+
+    <div class="task" id="t2">
+      <div class="task-header" onclick="toggleTask('t2')">
+        <div class="task-check" onclick="checkTask(event,'t2')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">确认第一客户定义</div>
+          <div class="task-meta">
+            <span class="task-tag bg-blue">必须完成</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 1小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">已定义的第一客户</div>
+          <div class="task-desc">刚毕业6个月内、主动求职但感受到明显压力、开始考虑「还有没有别的路」的应届生。以海外中国留学生为切入点，后续扩展至国内应届生市场。</div>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">需要团队内部确认</div>
+          <ul class="task-steps">
+            <li>这个定义所有人都认同吗？有没有要调整的？</li>
+            <li>留学生切入点的理由能不能讲清楚（我们自己就是样本）</li>
+            <li>确认这不是「留学生职业规划」，而是「留学生一人公司顾问」</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>客户画像一段话（100字以内），包含：是谁 / 在哪里 / 为什么需要我们 / 愿意付多少钱</div>
+      </div>
+    </div>
+
+    <div class="task" id="t3">
+      <div class="task-header" onclick="toggleTask('t3')">
+        <div class="task-check" onclick="checkTask(event,'t3')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">确认4种性格原型与测试框架</div>
+          <div class="task-meta">
+            <span class="task-tag bg-blue">必须完成</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">已确认的4种原型</div>
+          <table class="data-table">
+            <thead><tr><th>原型</th><th>核心驱动力</th><th>对应一人公司方向</th></tr></thead>
+            <tbody>
+              <tr><td>🔨 建造者型</td><td>把想法做成实物</td><td>数字产品、工具、课程、模板</td></tr>
+              <tr><td>🤝 连接者型</td><td>建立关系影响他人</td><td>社群运营、撮合、跨文化咨询</td></tr>
+              <tr><td>🎨 创作者型</td><td>表达自我审美输出</td><td>设计接单、内容创作、视频</td></tr>
+              <tr><td>🛡️ 守护者型</td><td>帮助他人被需要</td><td>在线辅导、职业陪跑、语言教学</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">需要确认的事</div>
+          <ul class="task-steps">
+            <li>这4种分法在你们团队内部有没有争议？</li>
+            <li>每种原型能不能举出1个真实的成功案例（用于报告内容）</li>
+            <li>确认5道测试题的评分逻辑（见工作手册第2.3节）</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>原型确认表（4种原型 + 每种1个真实案例 + 5道测试题最终版）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t4">
+      <div class="task-header" onclick="toggleTask('t4')">
+        <div class="task-check" onclick="checkTask(event,'t4')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">分工确认</div>
+          <div class="task-meta">
+            <span class="task-tag bg-blue">必须完成</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 30分钟</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">建议的3-5人分工</div>
+          <table class="data-table">
+            <thead><tr><th>角色</th><th>负责内容</th><th>人数</th></tr></thead>
+            <tbody>
+              <tr><td>数据负责人</td><td>二手数据核实 + 问卷设计发放分析</td><td>1-2人</td></tr>
+              <tr><td>内容负责人</td><td>4份性格报告内容 + 竞品分析</td><td>1-2人</td></tr>
+              <tr><td>演讲负责人</td><td>PPT制作 + 演讲排练</td><td>1人</td></tr>
+              <tr><td>财务负责人</td><td>财务模型 + 商业逻辑验证</td><td>1人</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-output"><strong>产出：</strong>分工表（姓名 + 负责任务 + 截止日期）</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="phase" id="phase2">
+  <div class="phase-header">
+    <div class="phase-num bg-violet">PHASE 2</div>
+    <div class="phase-title">市场调研</div>
+    <div class="phase-days">Day 3–5 · 数据负责人主导</div>
+  </div>
+  <p class="phase-sub">演讲中每引用一个数字，都要能立刻说出来源和年份。这个阶段的任务是把所有数据核实清楚，同时发出问卷收集一手数据。</p>
+  <div class="tasks">
+
+    <div class="task" id="t5">
+      <div class="task-header" onclick="toggleTask('t5')">
+        <div class="task-check" onclick="checkTask(event,'t5')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">二手数据核实（8条核心数据）</div>
+          <div class="task-meta">
+            <span class="task-tag bg-violet">市场调研</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 4小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要核实的8条数据</div>
+          <table class="data-table">
+            <thead><tr><th>数据内容</th><th>数字</th><th>来源</th><th>搜索关键词</th></tr></thead>
+            <tbody>
+              <tr><td>中国灵活就业人口</td><td>超2亿</td><td>国家统计局 2024</td><td>「灵活就业 2024 国家统计局」</td></tr>
+              <tr><td>职场人副业参与率</td><td>62%</td><td>CSDN职场副业报告 2025</td><td>「副业参与率 2025 CSDN」</td></tr>
+              <tr><td>2025届高校毕业生</td><td>1222万</td><td>教育部 2025</td><td>「2025届高校毕业生 教育部」</td></tr>
+              <tr><td>青年失业率</td><td>14.9%</td><td>国家统计局 2024年6月</td><td>「16-24岁城镇青年失业率 2024」</td></tr>
+              <tr><td>大厂校招降幅</td><td>较2022年下降30-50%</td><td>行业综合报告</td><td>「互联网大厂 校招 缩水 2024」</td></tr>
+              <tr><td>生成式AI用户规模</td><td>2.3亿（中国）</td><td>CNNIC第55次报告 2024</td><td>「CNNIC 第55次 互联网报告 2024」</td></tr>
+              <tr><td>AI替代岗位预测</td><td>4-8亿（全球）</td><td>麦肯锡全球研究院</td><td>「McKinsey AI jobs displacement 2030」</td></tr>
+              <tr><td>海外中国留学生</td><td>约90万</td><td>教育部统计 2024</td><td>「出国留学人数 2024 教育部」</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">操作要点</div>
+          <ul class="task-steps">
+            <li>每条数据找到原始来源（政府网站/机构官网），不用二手转载</li>
+            <li>记录：数字 + 来源全称 + 发布时间，存入共享文档</li>
+            <li>找不到原始来源的数据不能在演讲中用</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>数据核实表（Excel或共享文档），8条数据全部有原始来源链接</div>
+      </div>
+    </div>
+
+    <div class="task" id="t6">
+      <div class="task-header" onclick="toggleTask('t6')">
+        <div class="task-check" onclick="checkTask(event,'t6')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">问卷设计与发放</div>
+          <div class="task-meta">
+            <span class="task-tag bg-violet">一手调研</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时设计 + 持续收集</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">问卷目标</div>
+          <div class="task-desc">收集50份以上有效问卷，用于：① 验证目标用户的真实存在 ② 获得付费意愿数据支撑定价 ③ 验证4种性格分类是否有效</div>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">核心12道题（可直接使用）</div>
+          <div class="survey-q"><strong>Q1</strong> 你目前的状态是？<div class="survey-opts">A.在校 B.刚毕业找工作 C.已全职工作 D.自由职业 E.失业待业</div></div>
+          <div class="survey-q"><strong>Q2</strong> 有没有想过自己创业或独立接单？<div class="survey-opts">A.从未 B.想过没行动 C.正在筹备 D.已在做</div></div>
+          <div class="survey-q"><strong>Q3</strong> 如果有创业意向，最大障碍是？（多选）<div class="survey-opts">A.不知从哪开始 B.不知道能做什么 C.没资金 D.害怕失败 E.缺乏技能</div></div>
+          <div class="survey-q"><strong>Q4</strong> 身边有没有人因AI/自动化面临失业压力？<div class="survey-opts">A.没有 B.1-2人 C.3-5人 D.很多，很普遍</div></div>
+          <div class="survey-q"><strong>Q5</strong> 对AI工具（ChatGPT等）的使用程度？<div class="survey-opts">A.完全没用 B.知道不用 C.偶尔用 D.几乎每天</div></div>
+          <div class="survey-q"><strong>Q6</strong> 如有「根据你性格定制的创业方案+工具教程」，愿意付多少？<div class="survey-opts">A.不愿付 B.50以内 C.50-150元 D.150-300元 E.300以上</div></div>
+          <div class="survey-q"><strong>Q7</strong> 工作时哪种状态最像你？<div class="survey-opts">A.把一件事打磨到极致 B.靠关系推动事情 C.需要创意空间 D.帮助某人才有动力</div></div>
+          <div class="survey-q"><strong>Q8</strong> 最受不了哪种环境？<div class="survey-opts">A.重复枯燥 B.一人关着没互动 C.没有发挥空间 D.只顾赚钱不管感受</div></div>
+          <div class="survey-q"><strong>Q9</strong> 持续获得创业支持，你倾向哪种？<div class="survey-opts">A.一次性报告 B.订阅定期内容 C.社群分享 D.一对一指导</div></div>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">发放渠道</div>
+          <ul class="task-steps">
+            <li>留学生微信群 / WhatsApp群（最快，最精准）</li>
+            <li>学校内各专业同学群</li>
+            <li>小红书/朋友圈（扩大覆盖面）</li>
+            <li>建议用腾讯问卷或Google Forms，方便数据导出</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>问卷链接 + 至少50份回收数据 + Q1/Q4/Q6/Q7三组关键数据的图表（用于PPT Slide 2）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t7">
+      <div class="task-header" onclick="toggleTask('t7')">
+        <div class="task-check" onclick="checkTask(event,'t7')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">竞品深度研究</div>
+          <div class="task-meta">
+            <span class="task-tag bg-violet">竞品分析</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 3小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要深度研究的4类竞品</div>
+          <table class="data-table">
+            <thead><tr><th>竞品</th><th>需要了解什么</th><th>去哪里看</th></tr></thead>
+            <tbody>
+              <tr><td>霍兰德测试（RIASEC）</td><td>实际做一次，记录输出结果是什么格式、告诉你什么</td><td>16personalities.com 或搜「霍兰德职业测试」</td></tr>
+              <tr><td>新精英生涯</td><td>他们卖什么产品、多少钱、服务对象是谁</td><td>新精英生涯官网 xingjingying.com</td></tr>
+              <tr><td>智联招聘/前程无忧</td><td>有没有职业规划类产品，定位是什么</td><td>两个平台的产品页面</td></tr>
+              <tr><td>ChatGPT职业建议</td><td>实际问一次「我是连接者型，适合做什么一人公司」，记录回答质量</td><td>直接测试</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">重点：亲自体验霍兰德测试</div>
+          <ul class="task-steps">
+            <li>实际完成一次完整测试，截图保存结果页</li>
+            <li>记录：测试有几道题 / 结果告诉你什么 / 有没有行动建议 / 有没有AI工具指导</li>
+            <li>这是演讲中最有力的比较证据——「我亲自做过，它的结果是这样的，我们的结果是这样的」</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>竞品对比笔记（对应演讲手册第三部分），霍兰德测试结果截图，ChatGPT测试截图</div>
+      </div>
+    </div>
+
+    <div class="task" id="t8">
+      <div class="task-header" onclick="toggleTask('t8')">
+        <div class="task-check" onclick="checkTask(event,'t8')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">市场规模数字验证</div>
+          <div class="task-meta">
+            <span class="task-tag bg-violet">市场调研</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要验证的逻辑链</div>
+          <ul class="task-steps">
+            <li>SOM推算：「1222万毕业生 × 5%求职受阻转化 = 约61万/年」——这5%的依据是什么？找一个数据支撑或写明这是保守假设</li>
+            <li>SAM确认：「2亿灵活就业 + 2000万有创业意向」——后者的数字哪里来？需要找到来源或注明假设</li>
+            <li>留学生90万的细分：英美澳港新各是多少？用于说明SOM的可触达性</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>市场规模逻辑链文档（对应演讲手册第四部分 4.2节的口头回答版本）</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="phase" id="phase3">
+  <div class="phase-header">
+    <div class="phase-num bg-cyan">PHASE 3</div>
+    <div class="phase-title">产品内容制作</div>
+    <div class="phase-days">Day 5–8 · 内容负责人主导</div>
+  </div>
+  <p class="phase-sub">这是整个准备工作最重的部分——你们的产品到底是什么，需要在这个阶段写出来。评委的核心问题是「你们的报告里有什么」，这里给出答案。</p>
+  <div class="tasks">
+
+    <div class="task" id="t9">
+      <div class="task-header" onclick="toggleTask('t9')">
+        <div class="task-check" onclick="checkTask(event,'t9')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">5道测试题最终版</div>
+          <div class="task-meta">
+            <span class="task-tag bg-cyan">产品核心</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">已设计的5道题（确认或调整）</div>
+          <div class="survey-q"><strong>Q1</strong> 有段完全自由的时间，你第一反应是？<div class="survey-opts">A.做一直想做的小项目（建造者+2）/ B.约朋友或认识新人（连接者+2）/ C.写作画画拍视频（创作者+2）/ D.想想谁需要帮忙（守护者+2）</div></div>
+          <div class="survey-q"><strong>Q2</strong> 工作时最享受哪种状态？<div class="survey-opts">A.一人专注做到完美（建造者+2）/ B.沟通协调靠关系推动（连接者+2）/ C.有足够自由度（创作者+2）/ D.知道在帮助某人（守护者+2）</div></div>
+          <div class="survey-q"><strong>Q3</strong> 朋友怎么形容你？<div class="survey-opts">A.靠谱能落地（建造者+2）/ B.认识很多人（连接者+2）/ C.有独特风格（创作者+2）/ D.温暖愿意支持（守护者+2）</div></div>
+          <div class="survey-q"><strong>Q4</strong> 最怕的创业风险是？<div class="survey-opts">A.做了没人要（建造者+2）/ B.没人脉和圈子（连接者+2）/ C.被迫做重复无聊的事（创作者+2）/ D.让客户失望（守护者+2）</div></div>
+          <div class="survey-q"><strong>Q5</strong> 你心中成功的一人公司是？<div class="survey-opts">A.能自动运转的系统（建造者+2）/ B.很多人互连的网络（连接者+2）/ C.展示才华的舞台（创作者+2）/ D.改变某人生活的服务（守护者+2）</div></div>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">评分逻辑</div>
+          <ul class="task-steps">
+            <li>5题 × 2分 = 每种类型最高10分</li>
+            <li>四个类型各自统计总分，最高者即为结果</li>
+            <li>若并列，提示用户重新考虑某题</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>5道题最终确认版 + 评分规则文档（用于网站/演示）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t10">
+      <div class="task-header" onclick="toggleTask('t10')">
+        <div class="task-check" onclick="checkTask(event,'t10')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">4种性格类型报告内容（每人负责1种）</div>
+          <div class="task-meta">
+            <span class="task-tag bg-cyan">产品核心</span>
+            <span class="task-tag bg-red">工作量最大</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 4小时/份</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">每份报告必须包含的7个板块</div>
+          <table class="data-table">
+            <thead><tr><th>#</th><th>板块</th><th>具体内容</th><th>来源</th></tr></thead>
+            <tbody>
+              <tr><td>①</td><td>这类人是谁</td><td>性格描述 + 优势 + 常见处境 + 痛点</td><td>问卷Q7+Q8 + 小红书/Reddit真实帖子</td></tr>
+              <tr><td>②</td><td>市场机会</td><td>适合的生意市场有多大 + 已有多少人在做 + 平均收入</td><td>行业报告 + Upwork/闲鱼/小红书数据</td></tr>
+              <tr><td>③</td><td>3个推荐方向</td><td>具体的3个生意方向 + 启动成本 + 收入潜力</td><td>真实成功案例（LinkedIn/小红书/知乎）</td></tr>
+              <tr><td>④</td><td>6步起步路线图</td><td>从第一步到第六步，每步做什么 + 需要多久</td><td>自研 + 真实案例验证</td></tr>
+              <tr><td>⑤</td><td>AI工具清单</td><td>每步推荐1-2个工具 + 免费/付费 + 怎么用</td><td>自己试用后总结</td></tr>
+              <tr><td>⑥</td><td>真实案例</td><td>1个这种性格真实做成的人的路径故事</td><td>公开平台搜索</td></tr>
+              <tr><td>⑦</td><td>第一步行动</td><td>明天就能做的第一件事（具体到可执行）</td><td>自研</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">4种类型的研究起点</div>
+          <table class="data-table">
+            <thead><tr><th>类型</th><th>市场数据关键词</th><th>找案例的平台</th></tr></thead>
+            <tbody>
+              <tr><td>建造者型</td><td>digital product creator income, Gumroad stats</td><td>Gumroad、ProductHunt、Twitter/X</td></tr>
+              <tr><td>连接者型</td><td>community business model, matchmaking solo</td><td>LinkedIn、小红书、Substack</td></tr>
+              <tr><td>创作者型</td><td>creator economy revenue, freelance designer income</td><td>Behance、Upwork、小红书</td></tr>
+              <tr><td>守护者型</td><td>coaching business model, online tutoring income</td><td>Coach.me、小红书、知乎</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-output"><strong>产出：</strong>4份报告草稿（每份约4-6页），演讲时可以展示前2页作为产品样本</div>
+      </div>
+    </div>
+
+    <div class="task" id="t11">
+      <div class="task-header" onclick="toggleTask('t11')">
+        <div class="task-check" onclick="checkTask(event,'t11')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">合理假设清单整理</div>
+          <div class="task-meta">
+            <span class="task-tag bg-cyan">商业逻辑</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 1小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">老师允许的合理假设——整理成文档备用</div>
+          <table class="data-table">
+            <thead><tr><th>假设内容</th><th>演讲中怎么说</th></tr></thead>
+            <tbody>
+              <tr><td>团队有专业顾问支持</td><td>「我们与行业顾问建立了咨询关系，确保报告内容专业性」</td></tr>
+              <tr><td>已完成100份用户调研</td><td>「基于对目标用户群体的深度调研，我们收集了有效样本」</td></tr>
+              <tr><td>报告付费转化率20%</td><td>「参考知识付费行业15-25%的平均转化率，我们采用保守估计」</td></tr>
+              <tr><td>产品有功能性原型</td><td>「我们已完成产品原型，正在进行用户验证」</td></tr>
+              <tr><td>已有大学初步合作意向</td><td>「我们与2所大学的就业中心建立了初步合作意向」</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-output"><strong>产出：</strong>合理假设清单（内部备用，不放在PPT上，追问时使用）</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PHASE 4 -->
+<div class="phase" id="phase4">
+  <div class="phase-header">
+    <div class="phase-num bg-amber">PHASE 4</div>
+    <div class="phase-title">演讲素材制作</div>
+    <div class="phase-days">Day 8–11 · 演讲负责人主导</div>
+  </div>
+  <p class="phase-sub">这个阶段把前面所有准备好的内容整合进PPT，并把演讲脚本练熟。注意：PPT是辅助，讲的人才是核心。</p>
+  <div class="tasks">
+
+    <div class="task" id="t12">
+      <div class="task-header" onclick="toggleTask('t12')">
+        <div class="task-check" onclick="checkTask(event,'t12')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">PPT制作（11张幻灯片）</div>
+          <div class="task-meta">
+            <span class="task-tag bg-amber">演讲核心</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 6-8小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">11张幻灯片清单（对应演讲手册第二部分）</div>
+          <table class="data-table">
+            <thead><tr><th>#</th><th>标题</th><th>核心视觉元素</th><th>关键数据</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>开场·市场空白</td><td>全屏大字「2亿」</td><td>2亿灵活就业（国家统计局）</td></tr>
+              <tr><td>2</td><td>问题·供需断裂</td><td>左右两栏对比</td><td>1222万毕业生 + 大厂-30-50%</td></tr>
+              <tr><td>3</td><td>为什么是现在</td><td>3列卡片</td><td>AI工具 + 平台 + 政策</td></tr>
+              <tr><td>4</td><td>产品·流程图</td><td>5步水平流程图</td><td>定价：免费/¥49/¥19月/¥300</td></tr>
+              <tr><td>5</td><td>4种性格原型</td><td>4张卡片</td><td>每种1个具体案例</td></tr>
+              <tr><td>6</td><td>市场规模TAM/SAM/SOM</td><td>三层漏斗图</td><td>2亿/2000万/90万</td></tr>
+              <tr><td>7</td><td>商业模式·漏斗</td><td>4层漏斗可视化</td><td>每100用户≈¥2,275</td></tr>
+              <tr><td>8</td><td>竞争格局·蓝海</td><td>2×2矩阵图</td><td>我们在右上角独占</td></tr>
+              <tr><td>9</td><td>护城河·4层</td><td>4个卡片</td><td>数据/网络/专业/案例</td></tr>
+              <tr><td>10</td><td>三阶段规划</td><td>3列时间线</td><td>500测试/1万/B2B</td></tr>
+              <tr><td>11</td><td>团队·结尾</td><td>大字结尾句</td><td>「今天没有人。我们在做这件事。」</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">设计原则</div>
+          <ul class="task-steps">
+            <li>每张幻灯片只传递一个核心信息</li>
+            <li>数字尽可能放大，文字尽可能少</li>
+            <li>深色背景 + 白色文字 + 一个强调色（蓝色）</li>
+            <li>不要在幻灯片上放整段文字——那是讲稿，不是幻灯片</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>完整PPT文件（11张，可演示版本），以及备用版本（高对比度打印版）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t13">
+      <div class="task-header" onclick="toggleTask('t13')">
+        <div class="task-check" onclick="checkTask(event,'t13')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">财务模型一页纸</div>
+          <div class="task-meta">
+            <span class="task-tag bg-amber">商业逻辑</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要做出来的内容</div>
+          <ul class="task-steps">
+            <li>四层漏斗的数字版本：100用户 → 20付费报告 → 5订阅 → 2咨询</li>
+            <li>单次收入：¥980+¥95/月+¥600 = ¥2,275首次+持续</li>
+            <li>三阶段收入预测：早期/中期/长期的ARR目标</li>
+            <li>成本结构：运营成本有哪些（内容创作、平台维护）</li>
+          </ul>
+        </div>
+        <div class="task-source"><strong>参考：</strong>演讲手册第五部分（财务模型与合理假设）已有完整框架</div>
+        <div class="task-output"><strong>产出：</strong>财务模型表格（不放PPT，作为Q&A追问时的备用材料）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t14">
+      <div class="task-header" onclick="toggleTask('t14')">
+        <div class="task-check" onclick="checkTask(event,'t14')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">演讲脚本熟悉</div>
+          <div class="task-meta">
+            <span class="task-tag bg-amber">演讲核心</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 每人2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">需要接近逐字准备的3个关键段落</div>
+          <ul class="task-steps">
+            <li><strong>开场白（1分钟）</strong>：「中国今天有2亿人靠灵活就业赚钱……」完整版在演讲手册1.3节</li>
+            <li><strong>竞品差异化（45秒）</strong>：「我们没有直接竞争对手……霍兰德告诉你适合什么工作，我们告诉你怎么做只有你能做的生意」</li>
+            <li><strong>结尾（20秒）</strong>：「那2亿人，谁在服务他们？今天没有人。我们在做这件事。」</li>
+          </ul>
+        </div>
+        <div class="task-section">
+          <div class="task-section-label">其他部分</div>
+          <ul class="task-steps">
+            <li>其他段落不需要背，理解意思即可，看幻灯片提示来讲</li>
+            <li>每人把自己负责的部分录音听一遍，找到不自然的地方</li>
+          </ul>
+        </div>
+        <div class="task-source"><strong>参考：</strong>演讲手册第二部分，每张幻灯片都有完整讲稿</div>
+        <div class="task-output"><strong>产出：</strong>每个演讲人对自己部分的熟练程度 = 能不看稿流畅讲完</div>
+      </div>
+    </div>
+
+    <div class="task" id="t15">
+      <div class="task-header" onclick="toggleTask('t15')">
+        <div class="task-check" onclick="checkTask(event,'t15')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">Q&A答案准备</div>
+          <div class="task-meta">
+            <span class="task-tag bg-amber">演讲核心</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">⏱ 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section">
+          <div class="task-section-label">6道必须准备的问题（按评委类型分配）</div>
+          <table class="data-table">
+            <thead><tr><th>问题</th><th>谁最可能问</th><th>谁来回答</th></tr></thead>
+            <tbody>
+              <tr><td>转化率20%依据是什么？</td><td>银行家长</td><td>财务负责人</td></tr>
+              <tr><td>大机构为什么不会跟进？</td><td>市场老炮</td><td>主讲人</td></tr>
+              <tr><td>这个方向有理论依据吗？</td><td>学术老师</td><td>内容负责人</td></tr>
+              <tr><td>现在有没有真实付费用户？</td><td>任何人</td><td>主讲人</td></tr>
+              <tr><td>AI会不会替代你们？</td><td>任何人</td><td>主讲人</td></tr>
+              <tr><td>你们只是学生，凭什么做？</td><td>任何人</td><td>主讲人</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="task-source"><strong>参考：</strong>演讲手册第七部分，6道题均有完整标准答案</div>
+        <div class="task-output"><strong>产出：</strong>每个人把自己负责的Q&A答案讲给另一个人听，确认逻辑通顺、90秒内说完</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PHASE 5 -->
+<div class="phase" id="phase5">
+  <div class="phase-header">
+    <div class="phase-num bg-green">PHASE 5</div>
+    <div class="phase-title">最终冲刺</div>
+    <div class="phase-days">Day 11–13 · 全员</div>
+  </div>
+  <p class="phase-sub">这个阶段不再做新内容。所有工作都是「打磨」和「熟练」。过了Day 11还没定的内容，就不要再改了。</p>
+  <div class="tasks">
+
+    <div class="task" id="t16">
+      <div class="task-header" onclick="toggleTask('t16')">
+        <div class="task-check" onclick="checkTask(event,'t16')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">第一次完整排练（录音）</div>
+          <div class="task-meta">
+            <span class="task-tag bg-green">排练</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">Day 11 · 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <div class="task-section"><div class="task-section-label">排练规则</div>
+          <ul class="task-steps">
+            <li>站起来，真实计时，不允许中途停下来</li>
+            <li>全程录音或录视频</li>
+            <li>目标：13分钟以内讲完，每人不超时</li>
+            <li>排练完一起听录音，记录所有说不顺的地方</li>
+          </ul>
+        </div>
+        <div class="task-output"><strong>产出：</strong>排练录音 + 问题清单（需要修改的PPT/讲稿部分）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t17">
+      <div class="task-header" onclick="toggleTask('t17')">
+        <div class="task-check" onclick="checkTask(event,'t17')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">根据排练反馈修改</div>
+          <div class="task-meta">
+            <span class="task-tag bg-green">打磨</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">Day 11 · 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <ul class="task-steps">
+          <li>只改有问题的地方，不要全部推倒重来</li>
+          <li>PPT上改的内容不超过3处</li>
+          <li>讲稿改的地方当天重新练一遍</li>
+          <li>过了这天之后PPT不再改动</li>
+        </ul>
+        <div class="task-output"><strong>产出：</strong>定稿PPT（此后不再修改）</div>
+      </div>
+    </div>
+
+    <div class="task" id="t18">
+      <div class="task-header" onclick="toggleTask('t18')">
+        <div class="task-check" onclick="checkTask(event,'t18')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">模拟评委追问排练</div>
+          <div class="task-meta">
+            <span class="task-tag bg-green">排练</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">Day 12 · 2小时</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <ul class="task-steps">
+          <li>找一个完全不了解这个项目的人坐在对面听</li>
+          <li>让他在演讲过程中随时打断提问</li>
+          <li>重点练：被打断后能不慌、能把话接回来</li>
+          <li>练完后模拟Q&A：把6道准备好的问题全部问一遍</li>
+        </ul>
+        <div class="task-output"><strong>产出：</strong>每个人都经历过被打断追问，知道自己的薄弱点在哪</div>
+      </div>
+    </div>
+
+    <div class="task" id="t19">
+      <div class="task-header" onclick="toggleTask('t19')">
+        <div class="task-check" onclick="checkTask(event,'t19')"></div>
+        <div class="task-title-wrap">
+          <div class="task-title">Day 13：只通读一遍，不做修改</div>
+          <div class="task-meta">
+            <span class="task-tag bg-green">收尾</span>
+            <span class="task-tag" style="background:rgba(255,255,255,.06);color:var(--muted);">Day 13 · 30分钟</span>
+          </div>
+        </div>
+        <div class="task-expand">▼</div>
+      </div>
+      <div class="task-body">
+        <ul class="task-steps">
+          <li>每人把自己负责的部分在脑子里默念一遍</li>
+          <li>确认三件事：开场白记住了 / 结尾记住了 / Q&A答案记住了</li>
+          <li>不改任何内容，不开新的讨论</li>
+          <li>睡好觉</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DELIVERABLES -->
+<div class="phase" id="deliverables">
+  <div class="phase-header">
+    <div class="phase-num" style="background:rgba(255,255,255,.08);color:var(--white);">清单</div>
+    <div class="phase-title">最终交付物一览</div>
+  </div>
+  <p class="phase-sub">17号上台前，这些东西应该全部准备好。</p>
+  <div class="deliverables-grid">
+    <div class="del-card">
+      <div class="del-icon">📊</div>
+      <div class="del-title">数据核实表</div>
+      <div class="del-desc">8条核心数据，每条有原始来源链接和年份。演讲中引用时直接说来源。</div>
+      <div class="del-badge bg-violet">Phase 2 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">📋</div>
+      <div class="del-title">问卷数据报告</div>
+      <div class="del-desc">50份以上问卷的关键数据图表，特别是Q1/Q4/Q6三组数据。用于PPT Slide 2。</div>
+      <div class="del-badge bg-violet">Phase 2 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">🔍</div>
+      <div class="del-title">竞品研究笔记</div>
+      <div class="del-desc">霍兰德测试亲身体验截图 + ChatGPT测试截图 + 竞品对比分析。Q&A备用。</div>
+      <div class="del-badge bg-violet">Phase 2 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">📝</div>
+      <div class="del-title">4份性格报告草稿</div>
+      <div class="del-desc">建造者/连接者/创作者/守护者各一份，每份含7个板块。演讲时展示前2页。</div>
+      <div class="del-badge bg-cyan">Phase 3 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">🎯</div>
+      <div class="del-title">5道测试题定稿</div>
+      <div class="del-desc">含每道题选项和评分规则（每选项对应哪种类型+2分）。</div>
+      <div class="del-badge bg-cyan">Phase 3 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">📑</div>
+      <div class="del-title">PPT演示文稿（11张）</div>
+      <div class="del-desc">完整11张幻灯片，每张核心信息清晰，数字醒目，设计专业。</div>
+      <div class="del-badge bg-amber">Phase 4 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">💰</div>
+      <div class="del-title">财务模型表格</div>
+      <div class="del-desc">漏斗数字 + 三阶段收入预测。不放PPT，Q&A追问时用。</div>
+      <div class="del-badge bg-amber">Phase 4 产出</div>
+    </div>
+    <div class="del-card">
+      <div class="del-icon">🎤</div>
+      <div class="del-title">演讲脚本熟练度</div>
+      <div class="del-desc">开场白/竞品差异化/结尾三段接近背熟，其他部分理解意思能自然讲出。</div>
+      <div class="del-badge bg-green">Phase 5 验证</div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;">
+    <div style="font-size:11px;letter-spacing:2px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:12px;">REFERENCE DOCUMENTS</div>
+    <div class="res-grid">
+      <div class="res-card">
+        <div class="res-icon">📖</div>
+        <div class="res-title">投资路演演讲手册</div>
+        <div class="res-sub">11张PPT逐张讲稿 + Q&A完整答案</div>
+      </div>
+      <div class="res-card">
+        <div class="res-icon">🌐</div>
+        <div class="res-title">路演商业计划网站</div>
+        <div class="res-sub">完整商业逻辑可视化展示</div>
+      </div>
+      <div class="res-card">
+        <div class="res-icon">📊</div>
+        <div class="res-title">中国AI市场数据报告</div>
+        <div class="res-sub">15页权威二手数据来源</div>
+      </div>
+      <div class="res-card">
+        <div class="res-icon">📋</div>
+        <div class="res-title">12天规划网站</div>
+        <div class="res-sub">团队分工与里程碑</div>
+      </div>
+      <div class="res-card">
+        <div class="res-icon">📄</div>
+        <div class="res-title">公司全套工作手册</div>
+        <div class="res-sub">问卷/测试题/报告模板</div>
+      </div>
+      <div class="res-card">
+        <div class="res-icon">📉</div>
+        <div class="res-title">一人公司底层逻辑</div>
+        <div class="res-sub">给组员解释基础概念</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  <p><strong style="color:var(--white);">EXO · 准备流程追踪器</strong></p>
+  <p style="margin-top:6px;">6月17日上台 · 今天开始，按顺序来，不要跳步骤</p>
+</footer>
+
+<script>
+function toggleTask(id){
+  const t=document.getElementById(id);
+  t.classList.toggle('open');
+  const btn=t.querySelector('.task-expand');
+  btn.textContent=t.classList.contains('open')?'▲':'▼';
+}
+function checkTask(e,id){
+  e.stopPropagation();
+  const t=document.getElementById(id);
+  t.classList.toggle('done');
+  updateProgress();
+}
+function updateProgress(){
+  const all=document.querySelectorAll('.task').length;
+  const done=document.querySelectorAll('.task.done').length;
+  const pct=Math.round(done/all*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-badge').textContent=done+' / '+all+' 完成';
+}
+// Open first task by default
+document.addEventListener('DOMContentLoaded',()=>{
+  toggleTask('t1');
+});
+</script>
+</body>
+</html>
